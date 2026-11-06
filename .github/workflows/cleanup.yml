@@ -1,0 +1,38 @@
+name: cleanup
+on:
+  push:
+    paths: ['.github/workflows/cleanup.yml']
+permissions:
+  contents: write
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: remove old files and add blank page
+        run: |
+          git rm -r -q -- . ':!.github'
+          cat > index.html <<'HTML'
+          <!doctype html>
+          <html lang="ko">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>메디아 클래스</title>
+          </head>
+          <body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;color:#333">
+            <h1>메디아 클래스</h1>
+          </body>
+          </html>
+          HTML
+          cat > README.md <<'MD'
+          # mediaclass
+
+          메디아 컨설팅 코딩 교육 실습 저장소입니다.
+          MD
+          sed -i 's/^          //' index.html README.md
+          git add -A
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "저장소 비우고 빈 페이지만 남김"
+          git push
