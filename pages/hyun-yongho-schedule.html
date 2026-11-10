@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>스케쥴표 · 현용호</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --line: #e3e6ec;
+      --head: #f3f4f7;
+      --accent: #2f6df6;
+      --red: #e5484d;
+      --sat: #2f6df6;
+      --hol-bg: #fff4f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      padding: 32px 16px 64px;
+    }
+    .wrap { max-width: 1240px; margin: 0 auto; }
+    .back { display: inline-flex; gap: 6px; color: var(--muted); text-decoration: none; font-size: 14px; margin-bottom: 20px; }
+    .back:hover { color: var(--accent); }
+    h1 { font-size: 26px; margin: 0 0 20px; }
+    .box { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+    .box + .box { margin-top: 20px; }
+
+    .top { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .nav { display: flex; gap: 6px; }
+    .btn {
+      border: 1px solid var(--line); background: var(--card); color: var(--text);
+      border-radius: 6px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .title { font-size: 18px; font-weight: 700; margin: 0; }
+    .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-left: auto; font-size: 12px; color: var(--muted); }
+    .legend span { display: inline-flex; align-items: center; gap: 4px; }
+    .legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .help { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+
+    .scroll { overflow-x: auto; }
+    table.week {
+      width: 100%; min-width: 900px; border-collapse: collapse; table-layout: fixed;
+      border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; font-size: 13px;
+    }
+    .week th, .week td { border-bottom: 1px solid var(--line); text-align: center; padding: 6px 4px; height: 36px; }
+    .week thead th { background: var(--head); font-weight: 600; height: 50px; vertical-align: middle; }
+    .week col.c-range { width: 80px; } .week col.c-name { width: 90px; }
+    .week th.range { text-align: left; padding-left: 10px; font-weight: 500; line-height: 1.6; }
+    .week td.room { color: var(--accent); text-align: left; padding-left: 10px; background: #f8f9fb; }
+    .week td.name { text-align: left; padding-left: 8px; }
+    .week .sat { color: var(--sat); }
+    .week .sun, .week .hol { color: var(--red); }
+    .week th.hol, .week td.hol { background: var(--hol-bg); }
+    .week th.today { box-shadow: inset 0 0 0 2px var(--accent); }
+    .week .other { opacity: .35; }
+    .hname { display: block; font-size: 11px; font-weight: 700; margin-top: 2px; }
+    .todaytag { background: var(--accent); color: #fff; font-size: 10px; border-radius: 3px; padding: 1px 4px; margin-left: 3px; }
+
+    .cell {
+      width: 100%; border: 0; border-radius: 4px; padding: 5px 2px; font: inherit; font-size: 12px;
+      cursor: pointer; background: transparent; color: #b8bcc6;
+    }
+    .cell:hover { outline: 1px dashed var(--accent); }
+    .cell.set { color: #fff; font-weight: 600; }
+
+    .menu {
+      position: absolute; z-index: 10; background: #fff; border: 1px solid var(--line);
+      border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 4px; min-width: 130px;
+    }
+    .menu[hidden] { display: none; }
+    .menu button {
+      display: flex; align-items: center; gap: 6px; width: 100%; border: 0; background: none;
+      text-align: left; padding: 7px 8px; font: inherit; font-size: 13px; border-radius: 5px; cursor: pointer;
+    }
+    .menu button:hover { background: #eef3ff; }
+    .menu i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+    /* 원장별 월간 집계 */
+    .sum-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .sum-head h2 { font-size: 17px; margin: 0; }
+    .sum-head .note { font-size: 12px; color: var(--muted); }
+    table.sum { width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px; }
+    .sum th, .sum td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: center; }
+    .sum thead th { background: var(--head); font-weight: 600; font-size: 13px; }
+    .sum td.l, .sum th.l { text-align: left; }
+    .sum tfoot td { font-weight: 700; background: #fafbfc; }
+    .sum .big { font-weight: 700; }
+    .sum .warn { color: var(--red); font-weight: 700; }
+    .hol-list { margin: 14px 0 0; font-size: 13px; color: var(--muted); }
+    .hol-list b { color: var(--red); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="hyun-yongho.html">← 현용호 페이지로</a>
+    <h1>스케쥴표</h1>
+
+    <section class="box">
+      <div class="top">
+        <div class="nav">
+          <button class="btn" id="prev">◀ 이전달</button>
+          <button class="btn" id="thisMonth">이번달</button>
+          <button class="btn" id="next">다음달 ▶</button>
+        </div>
+        <h2 class="title" id="title"></h2>
+        <div class="legend" id="legend"></div>
+      </div>
+      <p class="help">칸을 누르면 근무를 고를 수 있습니다. 공휴일은 날짜 아래에 이름이 빨간색으로 자동 표시됩니다.</p>
+      <div class="scroll" id="weeks"></div>
+    </section>
+
+    <section class="box">
+      <div class="sum-head">
+        <h2 id="sumTitle">원장별 월간 집계</h2>
+        <span class="note">이 달에 속한 날짜만 셉니다 · 근무시간은 아래 범례의 시간 기준</span>
+      </div>
+      <div class="scroll">
+        <table class="sum">
+          <thead>
+            <tr>
+              <th class="l">진료실</th><th class="l">원장</th>
+              <th>근무일</th><th>진료 야간</th><th>진료 7시</th><th>진료 2시</th>
+              <th>토요일 근무</th><th>일·공휴일 근무</th><th>휴진</th><th>총 근무시간</th>
+            </tr>
+          </thead>
+          <tbody id="sumBody"></tbody>
+          <tfoot id="sumFoot"></tfoot>
+        </table>
+      </div>
+      <p class="hol-list" id="holList"></p>
+    </section>
+  </div>
+
+  <div class="menu" id="menu" hidden></div>
+
+  <script>
+    const KEY = 'hyun-yongho-schedule';
+    const $ = (id) => document.getElementById(id);
+    const el = (tag, cls, text) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    // 진료실 · 원장 목록 — 필요하면 아래에 추가하세요
+    const DOCTORS = [
+      { id: 'd1', room: '1진료실', name: '임현우' },
+      { id: 'd2', room: '2진료실', name: '서지명' },
+    ];
+    // 근무 종류 — 시간(start~end)은 병원 실제 진료시간에 맞게 고치세요 (집계의 총 근무시간에 쓰입니다)
+    const SHIFTS = {
+      night: { label: '진료 야간', color: '#1d4ed8', start: '09:00', end: '21:00' },
+      seven: { label: '진료 7시', color: '#3b82f6', start: '09:00', end: '19:00' },
+      two:   { label: '진료 2시', color: '#93c5fd', start: '09:00', end: '14:00' },
+      off:   { label: '휴진',     color: '#e5484d', off: true },
+    };
+    const hoursOf = (s) => {
+      if (!s || s.off) return 0;
+      const m = (t) => { const [h, mi] = t.split(':').map(Number); return h * 60 + mi; };
+      return (m(s.end) - m(s.start)) / 60;
+    };
+
+    // ── 공휴일 (현용호 업무 캘린더와 같은 목록) ──
+    // 음력 명절·대체공휴일·선거일은 연도별로 직접 적어야 합니다
+    const HOLIDAYS_BY_YEAR = {
+      2025: {
+        '01-27': '임시공휴일', '01-28': '설날 연휴', '01-29': '설날', '01-30': '설날 연휴',
+        '03-03': '대체공휴일', '05-05': '어린이날·부처님오신날', '05-06': '대체공휴일',
+        '06-03': '대통령선거일', '10-05': '추석 연휴', '10-06': '추석', '10-07': '추석 연휴',
+        '10-08': '대체공휴일',
+      },
+      2026: {
+        '02-16': '설날 연휴', '02-17': '설날', '02-18': '설날 연휴', '03-02': '대체공휴일',
+        '05-24': '부처님오신날', '05-25': '대체공휴일', '06-03': '지방선거일',
+        '08-17': '대체공휴일', '09-24': '추석 연휴', '09-25': '추석', '09-26': '추석 연휴',
+        '10-05': '대체공휴일',
+      },
+      2027: {
+        '02-06': '설날 연휴', '02-07': '설날', '02-08': '설날 연휴', '02-09': '대체공휴일',
+        '05-03': '대체공휴일', '05-13': '부처님오신날', '07-19': '대체공휴일',
+        '08-16': '대체공휴일', '09-14': '추석 연휴', '09-15': '추석', '09-16': '추석 연휴',
+        '10-04': '대체공휴일', '10-11': '대체공휴일', '12-27': '대체공휴일',
+      },
+    };
+    function fixedHolidays(y) {
+      const f = {
+        '01-01': '신정', '03-01': '삼일절', '05-05': '어린이날', '06-06': '현충일',
+        '08-15': '광복절', '10-03': '개천절', '10-09': '한글날', '12-25': '성탄절',
+      };
+      if (y >= 2026) { f['05-01'] = '노동절'; f['07-17'] = '제헌절'; }
+      return f;
+    }
+    function holidayOf(k) {
+      const y = Number(k.slice(0, 4)), md = k.slice(5);
+      return (HOLIDAYS_BY_YEAR[y] || {})[md] || fixedHolidays(y)[md] || '';
+    }
+
+    // ── 저장소: { "2026-11-10": { d1: "night", d2: "seven" }, ... } ──
+    const pad = (n) => String(n).padStart(2, '0');
+    const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    let data = null;
+    try { data = JSON.parse(localStorage.getItem(KEY)); } catch (e) { data = null; }
+    if (!data || typeof data !== 'object') data = seed();
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {} }
+
+    // 처음 열었을 때 예시 데이터 (2026년 11월 둘째·셋째 주)
+    function seed() {
+      const pat = {
+        d1: ['night', 'seven', 'seven', 'night', 'seven', 'two', null],
+        d2: ['seven', 'night', null, 'seven', 'night', 'two', null],
+      };
+      const out = {};
+      [new Date(2026, 10, 9), new Date(2026, 10, 16)].forEach((mon) => {
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(mon); d.setDate(mon.getDate() + i);
+          const day = {};
+          for (const id in pat) if (pat[id][i]) day[id] = pat[id][i];
+          if (Object.keys(day).length) out[keyOf(d)] = day;
+        }
+      });
+      return out;
+    }
+
+    const today = new Date();
+    let view = new Date(today.getFullYear(), today.getMonth(), 1);
+    const DOW = ['월', '화', '수', '목', '금', '토', '일'];
+
+    function renderLegend() {
+      const lg = $('legend'); lg.textContent = '';
+      Object.values(SHIFTS).forEach((s) => {
+        const sp = el('span'); const i = el('i'); i.style.background = s.color;
+        sp.append(i, s.off ? s.label : `${s.label} ${s.start}~${s.end}`);
+        lg.appendChild(sp);
+      });
+      const sp = el('span'); const i = el('i'); i.style.background = '#fbd5d6';
+      sp.append(i, '공휴일'); lg.appendChild(sp);
+    }
+
+    function renderWeeks() {
+      const y = view.getFullYear(), m = view.getMonth();
+      $('title').textContent = `${y}년 ${m + 1}월`;
+      const box = $('weeks'); box.textContent = '';
+      // 이 달 1일이 들어있는 주의 월요일부터 시작
+      const first = new Date(y, m, 1);
+      const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7));
+      const todayKey = keyOf(today);
+
+      for (let w = new Date(start); w.getMonth() === m || w < first; w.setDate(w.getDate() + 7)) {
+        const days = [];
+        for (let i = 0; i < 7; i++) { const d = new Date(w); d.setDate(w.getDate() + i); days.push(d); }
+        const t = el('table', 'week');
+        const cg = el('colgroup'); cg.append(el('col', 'c-range'), el('col', 'c-name'));
+        for (let i = 0; i < 7; i++) cg.appendChild(el('col'));
+        t.appendChild(cg);
+
+        const hr = el('tr');
+        const rg = el('th', 'range');
+        rg.append(`${days[0].getMonth() + 1}/${days[0].getDate()} ~`, el('br'), `${days[6].getMonth() + 1}/${days[6].getDate()}`);
+        hr.append(rg, el('th', '', '이름'));
+        const meta = days.map((d, i) => {
+          const k = keyOf(d);
+          return { k, hol: holidayOf(k), other: d.getMonth() !== m, sat: i === 5, sun: i === 6 };
+        });
+        days.forEach((d, i) => {
+          const md = meta[i];
+          const cls = [md.hol ? 'hol' : md.sun ? 'sun' : md.sat ? 'sat' : '', md.k === todayKey ? 'today' : ''].join(' ').trim();
+          const th = el('th', cls);
+          const lab = el('span', md.other ? 'other' : '', `${DOW[i]} ${d.getDate()}`);
+          th.appendChild(lab);
+          if (md.k === todayKey) th.appendChild(el('span', 'todaytag', '오늘'));
+          if (md.hol) th.appendChild(el('span', 'hname' + (md.other ? ' other' : ''), md.hol));
+          hr.appendChild(th);
+        });
+        const thead = el('thead'); thead.appendChild(hr); t.appendChild(thead);
+
+        const tb = el('tbody');
+        DOCTORS.forEach((doc) => {
+          const tr = el('tr');
+          tr.append(el('td', 'room', doc.room), el('td', 'name', doc.name));
+          meta.forEach((md) => {
+            const td = el('td', md.hol ? 'hol' : '');
+            const code = (data[md.k] || {})[doc.id];
+            const s = SHIFTS[code];
+            const b = el('button', 'cell' + (s ? ' set' : '') + (md.other ? ' other' : ''), s ? s.label : (md.hol ? '공휴일' : '—'));
+            b.type = 'button';
+            if (s) b.style.background = s.color;
+            b.title = `${md.k} ${doc.name}${md.hol ? ' · ' + md.hol : ''}`;
+            b.addEventListener('click', (e) => openMenu(e.currentTarget, md.k, doc.id));
+            td.appendChild(b); tr.appendChild(td);
+          });
+          tb.appendChild(tr);
+        });
+        t.appendChild(tb); box.appendChild(t);
+      }
+    }
+
+    // ── 근무 선택 메뉴 ──
+    function openMenu(btn, k, docId) {
+      const menu = $('menu'); menu.textContent = '';
+      const opts = Object.entries(SHIFTS).concat([[null, { label: '비우기', color: 'transparent' }]]);
+      opts.forEach(([code, s]) => {
+        const b = el('button'); b.type = 'button';
+        const i = el('i'); i.style.background = s.color; if (!code) i.style.border = '1px solid #ccc';
+        b.append(i, s.label);
+        b.addEventListener('click', () => {
+          const day = data[k] || {};
+          if (code) day[docId] = code; else delete day[docId];
+          if (Object.keys(day).length) data[k] = day; else delete data[k];
+          save(); closeMenu(); render();
+        });
+        menu.appendChild(b);
+      });
+      const r = btn.getBoundingClientRect();
+      menu.hidden = false;
+      const left = Math.min(r.left + scrollX, scrollX + document.documentElement.clientWidth - menu.offsetWidth - 8);
+      menu.style.left = Math.max(8, left) + 'px';
+      menu.style.top = (r.bottom + scrollY + 4) + 'px';
+    }
+    function closeMenu() { $('menu').hidden = true; }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.menu') && !e.target.closest('.cell')) closeMenu();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+
+    // ── 원장별 월간 집계 ──
+    function renderSummary() {
+      const y = view.getFullYear(), m = view.getMonth();
+      $('sumTitle').textContent = `원장별 월간 집계 · ${y}년 ${m + 1}월`;
+      const last = new Date(y, m + 1, 0).getDate();
+      const blank = () => ({ work: 0, night: 0, seven: 0, two: 0, sat: 0, hol: 0, off: 0, hours: 0 });
+      const total = blank();
+      const rows = DOCTORS.map((doc) => {
+        const c = blank();
+        for (let d = 1; d <= last; d++) {
+          const date = new Date(y, m, d), k = keyOf(date);
+          const code = (data[k] || {})[doc.id], s = SHIFTS[code];
+          if (!s) continue;
+          if (s.off) { c.off++; continue; }
+          c.work++; c[code] = (c[code] || 0) + 1; c.hours += hoursOf(s);
+          if (date.getDay() === 6) c.sat++;
+          if (holidayOf(k) || date.getDay() === 0) c.hol++;
+        }
+        for (const f in total) total[f] += c[f];
+        return [doc, c];
+      });
+
+      const body = $('sumBody'); body.textContent = '';
+      const cells = (c) => [
+        [c.work, 'big'], [c.night], [c.seven], [c.two], [c.sat],
+        [c.hol, c.hol ? 'warn' : ''], [c.off], [`${+c.hours.toFixed(1)}시간`, 'big'],
+      ];
+      rows.forEach(([doc, c]) => {
+        const tr = el('tr');
+        tr.append(el('td', 'l', doc.room), el('td', 'l', doc.name));
+        cells(c).forEach(([v, cls]) => tr.appendChild(el('td', cls || '', String(v))));
+        body.appendChild(tr);
+      });
+      const foot = $('sumFoot'); foot.textContent = '';
+      const tr = el('tr'); const td = el('td', 'l', '합계'); td.colSpan = 2; tr.appendChild(td);
+      cells(total).forEach(([v]) => tr.appendChild(el('td', '', String(v))));
+      foot.appendChild(tr);
+
+      // 이 달 공휴일 목록
+      const hols = [];
+      for (let d = 1; d <= last; d++) {
+        const k = keyOf(new Date(y, m, d)), h = holidayOf(k);
+        if (h) hols.push(`${m + 1}/${d} ${h}`);
+      }
+      const hl = $('holList'); hl.textContent = '';
+      hl.append('이 달 공휴일: ');
+      hl.appendChild(el('b', '', hols.length ? hols.join(' · ') : '없음'));
+    }
+
+    function render() { renderWeeks(); renderSummary(); }
+    $('prev').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); });
+    $('next').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); });
+    $('thisMonth').addEventListener('click', () => { view = new Date(today.getFullYear(), today.getMonth(), 1); render(); });
+    renderLegend();
+    render();
+  </script>
+</body>
+</html>
