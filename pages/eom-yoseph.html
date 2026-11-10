@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>엄요셉 · 메디아 클래스</title>
+  <style>
+    :root {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --line: #e3e6ec;
+      --accent: #2f6df6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      padding: 32px 16px 64px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted); text-decoration: none; font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .back:hover { color: var(--accent); }
+    .head {
+      display: flex; align-items: center; gap: 16px;
+      padding-bottom: 20px; border-bottom: 1px solid var(--line);
+      margin-bottom: 28px;
+    }
+    .avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #eef3ff; color: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; flex: none;
+    }
+    h1 { font-size: 26px; margin: 0 0 4px; }
+    .sub { color: var(--muted); font-size: 14px; margin: 0; }
+
+    /* ↓↓↓ 여기부터 자유롭게 수정하세요 ↓↓↓ */
+    .canvas {
+      background: var(--card);
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+    /* ↑↑↑ 여기까지 ↑↑↑ */
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="../index.html">← 전체 목록으로</a>
+
+    <div class="head">
+      <div class="avatar">엄</div>
+      <div>
+        <h1>엄요셉</h1>
+        <p class="sub">메디아 개원팀 · 나만의 페이지</p>
+      </div>
+    </div>
+
+    <!-- ↓↓↓ 여기부터 원하는 결과물을 만들어 보세요 ↓↓↓ -->
+    <section class="canvas">
+      <p>아직 비어 있는 페이지입니다.</p>
+      <p>이 영역을 지우고 엄요셉님이 만들고 싶은 내용을 채워 보세요.</p>
+    </section>
+    <!-- ↑↑↑ 여기까지 ↑↑↑ -->
+  </div>
+</body>
+</html>
